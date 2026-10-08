@@ -1,0 +1,34 @@
+SKU,Product Name,Category,Price,Stock,Updated,Contact Email
+SKU-1000,Desk Lamp,Outdoor,24.00,180,2026-09-08,
+SKU-1001,Bamboo Cutting Board,Audio,35.50,,2026-09-01,
+SKU-1002,Bluetooth Speaker,Home Office,12.50,,2026-09-27,support@example.com
+SKU-1003,Chef Knife 8in,Outdoor,79.00,,2026-09-18,sales@example.com
+SKU-1004,Cable Tray,Outdoor,49.90,34,2026-09-04,support@example.com
+SKU-1005,Wireless Earbuds,Kitchen,19.99,,,
+SKU-1006,Water Bottle 1L,Home Office,12.50,,2026-09-27,sales@example.com
+SKU-1007,Desk Lamp,Outdoor,129.99,,2026-09-19,sales@example.com
+SKU-1008,Bamboo Cutting Board,Outdoor,35.50,73,,
+SKU-1009,Chef Knife 8in,Audio,79.00,16,,sales@example.com
+SKU-1010,Standing Desk Frame,Kitchen,79.00,,2026-09-14,sales@example.com
+SKU-1011,Chef Knife 8in,Outdoor,129.99,97,2026-09-24,
+SKU-1012,Wireless Earbuds,Audio,35.50,13,2026-09-15,
+SKU-1014,Bamboo Cutting Board,Audio,79.00,,2026-09-11,sales@example.com
+SKU-1015,Bluetooth Speaker,Kitchen,24.00,15,2026-09-27,sales@example.com
+SKU-1016,Desk Lamp,Outdoor,24.00,15,,
+SKU-1017,Folding Chair,Kitchen,49.90,68,2026-09-09,sales@example.com
+SKU-1018,Cable Tray,Outdoor,129.99,105,,
+SKU-1019,Folding Chair,Home Office,19.99,,,
+SKU-1020,Standing Desk Frame,Audio,49.90,,,sales@example.com
+SKU-1021,Folding Chair,Audio,79.00,21,2026-09-21,sales@example.com
+SKU-1022,Desk Lamp,Audio,24.00,,2026-09-12,sales@example.com
+SKU-1023,Ergo Mouse,Home Office,35.50,136,2026-09-10,sales@example.com
+SKU-1024,Folding Chair,Audio,19.99,15,2026-09-17,sales@example.com
+SKU-1025,Desk Lamp,Audio,35.50,195,,support@example.com
+SKU-1026,Bluetooth Speaker,Outdoor,49.90,,2026-09-22,sales@example.com
+SKU-1027,Glass Storage Jar,Audio,129.99,,2026-09-27,
+SKU-1028,Standing Desk Frame,Home Office,12.50,,2026-09-23,sales@example.com
+SKU-1029,Camping Lantern,Audio,129.99,,2026-09-20,support@example.com
+SKU-1030,Noise Cancelling Headphones,Home Office,12.50,,2026-09-12,support@example.com
+SKU-1031,Water Bottle 1L,Kitchen,79.00,80,2026-09-12,
+SKU-1032,Camping Lantern,Outdoor,12.50,,2026-09-10,
+SKU-1033,Water Bottle 1L,Outdoor,79.00,148,2026-09-22,support@example.com

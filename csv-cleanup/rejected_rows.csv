@@ -1,0 +1,10 @@
+SKU,Product Name,Category,Price,Stock,Updated,Contact Email,Reason
+,  FOLDING CHAIR ,Outdoors, 35.5$ ,twenty,27/09/2026,not-an-email,missing SKU
+SKU-1000,  GLASS STORAGE JAR ,audio, 79$ ,37,"Sep 26, 2026",Sales@Example.com ,duplicate SKU
+SKU-1001,Cable Tray,HOME OFFICE,129.99 USD,,"Sep 7, 2026",sales@example.com,duplicate SKU
+SKU-1002,Wireless Earbuds,Outdoors,24.0,N/A,28/09/2026,sales@example.com,duplicate SKU
+SKU-1003,Glass Storage Jar,Audio,19.99,,2026-09-04,Sales@Example.com ,duplicate SKU
+SKU-1004,water bottle 1l,Home Office,49.90, 15 ,2026-09-22,,duplicate SKU
+SKU-1005,  BAMBOO CUTTING BOARD ,Outdoor,130.0,N/A,01/09/2026,Sales@Example.com ,duplicate SKU
+SKU-1006,Ergo Mouse,HOME OFFICE,US$79,N/A,2026.09.22,,duplicate SKU
+,Wireless Earbuds,HOME OFFICE,19.99,twenty,2026.09.08,not-an-email,missing SKU

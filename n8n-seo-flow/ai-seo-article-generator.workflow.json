@@ -1,0 +1,371 @@
+{
+  "name": "AI SEO Article Generator (Showcase)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n_trig",
+      "name": "Run Demo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "mode",
+              "value": "mock",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "model",
+              "value": "deepseek-chat",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "words",
+              "value": "600",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n_cfg",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// If rows came from Google Sheets (columns: keyword, audience, tone) use them; otherwise use 3 neutral sample keywords.\nconst rows = $input.all().filter(i => i.json && i.json.keyword);\nif (rows.length) {\n  return rows.map(i => ({ json: { keyword: String(i.json.keyword).trim(), audience: i.json.audience || 'general readers', tone: i.json.tone || 'clear, friendly' } }));\n}\nreturn [\n  { json: { keyword: 'standing desks 2026', audience: 'home office workers', tone: 'practical, friendly' } },\n  { json: { keyword: 'how to clean a laptop keyboard', audience: 'students', tone: 'simple, step by step' } },\n  { json: { keyword: 'best budget noise cancelling headphones', audience: 'commuters', tone: 'honest, comparison style' } },\n];"
+      },
+      "id": "n_kw",
+      "name": "Keywords",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "notes": "Live mode: replace with the Google Sheets node (Read rows) with columns keyword / audience / tone."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build one LLM request per keyword\nconst cfg = $('Config').first().json;\nreturn $input.all().map(i => {\n  const k = i.json;\n  const system = 'You are an SEO content writer. Write clear, helpful, original articles. No fake statistics, no made-up product claims.';\n  const user = `Write a ${cfg.words}-word article for the keyword \"${k.keyword}\".\\nAudience: ${k.audience}. Tone: ${k.tone}.\\nStructure: one H1 title, a 2-sentence intro, 4 H2 sections with short paragraphs and one bullet list, a short conclusion.\\nOutput Markdown only.`;\n  return { json: { ...k, mode: cfg.mode, request: { model: cfg.model, temperature: 0.7, messages: [ { role: 'system', content: system }, { role: 'user', content: user } ] } } };\n});"
+      },
+      "id": "n_build",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.mode }}",
+              "rightValue": "live",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "n_if",
+      "name": "Live or Mock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.request) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "n_llm",
+      "name": "LLM (DeepSeek)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -120
+      ],
+      "notes": "Live mode. Uses a Header Auth credential (Authorization: Bearer <your key>). Works with any OpenAI-compatible API: change the URL and the model in Config."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalise the LLM HTTP response (OpenAI-compatible: OpenAI, DeepSeek, Moonshot, LiteLLM...)\nreturn $input.all().map((i, idx) => {\n  const src = $('Build Prompt').all()[idx].json;\n  const md = i.json?.choices?.[0]?.message?.content || '';\n  return { json: { keyword: src.keyword, audience: src.audience, tone: src.tone, mode: src.mode, article_md: md, llm_source: 'live' } };\n});"
+      },
+      "id": "n_ext",
+      "name": "Extract Article",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// OFFLINE TEST: pretend to be the LLM so the whole flow can be demonstrated without an API key\nreturn $input.all().map(i => {\n  const k = i.json.keyword;\n  const md = `# ${k.replace(/\\b\\w/g, c => c.toUpperCase())}: A Practical Guide\\n\\nLooking into ${k}? Here is a short, honest guide. We cover what matters, what to skip, and how to decide.\\n\\n## What to look for\\n\\nStart with your real needs, not the marketing. Write down your budget and how often you will use it.\\n\\n- Comfort and build quality\\n- Price versus warranty\\n- How easy it is to return\\n\\n## Common mistakes\\n\\nMost people overbuy features they never use.\\n\\n## How to compare options\\n\\nPick three candidates and compare them on the same five points: price, quality, warranty, reviews from real users, and how easy it is to return. Write the numbers down side by side so the choice becomes obvious instead of emotional.\\n\\n## When to upgrade\\n\\nUpgrade when the current setup costs you time every day.\\n\\n## Conclusion\\n\\nKeep it simple: define your needs, compare a few options, and test before you commit.`;\n  return { json: { ...i.json, article_md: md, llm_source: 'mock' } };\n});"
+      },
+      "id": "n_mock",
+      "name": "Mock LLM (offline)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean + format: Markdown -> clean HTML, extract title/slug/meta, quality checks\nfunction esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}\nfunction inline(s){return esc(s).replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>').replace(/\\*(.+?)\\*/g,'<em>$1</em>');}\nfunction mdToHtml(md){\n  const lines = md.replace(/```[a-z]*\\n?/gi,'').split(/\\r?\\n/);\n  let html='', list=false;\n  for (const raw of lines){\n    const l = raw.trim();\n    if (/^[-*] /.test(l)){ if(!list){html+='<ul>';list=true;} html+='<li>'+inline(l.slice(2))+'</li>'; continue; }\n    if (list){html+='</ul>';list=false;}\n    if (!l) continue;\n    if (/^### /.test(l)) html+='<h3>'+inline(l.slice(4))+'</h3>';\n    else if (/^## /.test(l)) html+='<h2>'+inline(l.slice(3))+'</h2>';\n    else if (/^# /.test(l)) html+='<h1>'+inline(l.slice(2))+'</h1>';\n    else html+='<p>'+inline(l)+'</p>';\n  }\n  if (list) html+='</ul>';\n  return html;\n}\nreturn $input.all().map(i => {\n  const md = (i.json.article_md || '').trim();\n  const title = (md.match(/^#\\s+(.+)$/m) || [,i.json.keyword])[1].trim();\n  const html = mdToHtml(md);\n  const plain = html.replace(/<[^>]+>/g,' ').replace(/\\s+/g,' ').trim();\n  const words = plain.split(' ').filter(Boolean).length;\n  const slug = i.json.keyword.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');\n  const h2 = (html.match(/<h2>/g)||[]).length;\n  const checks = { has_title: !!title, h2_sections: h2, enough_words: words >= 120, no_markdown_left: !/(^|\\n)#+\\s|\\*\\*/.test(plain) };\n  const ok = checks.has_title && h2 >= 3 && checks.enough_words && checks.no_markdown_left;\n  return { json: { keyword: i.json.keyword, title, slug, meta_description: plain.slice(0,155), word_count: words, html, status: ok ? 'READY' : 'NEEDS REVIEW', checks, llm_source: i.json.llm_source } };\n});"
+      },
+      "id": "n_clean",
+      "name": "Clean & Format",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One-row-per-article summary table (also useful for a Google Sheet / report)\nreturn $input.all().map(i => ({ json: { keyword: i.json.keyword, title: i.json.title, words: i.json.word_count, status: i.json.status, slug: i.json.slug } }));"
+      },
+      "id": "n_sum",
+      "name": "Summary Table",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        0
+      ],
+      "notes": "Publish step (optional, live): add Google Docs 'Create document' or WordPress 'Create post' (status: draft) after Clean & Format, using the html / title fields."
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "n_sheets",
+      "name": "Google Sheets: Read keywords",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        330,
+        -160
+      ],
+      "disabled": true,
+      "notes": "OPTIONAL (disabled). Enable, connect your Google account, pick the sheet. Columns: keyword | audience | tone."
+    },
+    {
+      "parameters": {
+        "resource": "post",
+        "operation": "create",
+        "title": "={{ $json.title }}",
+        "additionalFields": {
+          "content": "={{ $json.html }}",
+          "slug": "={{ $json.slug }}",
+          "status": "draft"
+        }
+      },
+      "id": "n_wp",
+      "name": "WordPress: Create draft",
+      "type": "n8n-nodes-base.wordpress",
+      "typeVersion": 1,
+      "position": [
+        1650,
+        -160
+      ],
+      "disabled": true,
+      "notes": "OPTIONAL (disabled). Enable and add your WordPress credentials. Creates DRAFT posts only (nothing is published)."
+    }
+  ],
+  "connections": {
+    "Run Demo": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets: Read keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "Live or Mock?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Live or Mock?": {
+      "main": [
+        [
+          {
+            "node": "LLM (DeepSeek)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mock LLM (offline)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Article": {
+      "main": [
+        [
+          {
+            "node": "Clean & Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock LLM (offline)": {
+      "main": [
+        [
+          {
+            "node": "Clean & Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean & Format": {
+      "main": [
+        [
+          {
+            "node": "WordPress: Create draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets: Read keywords": {
+      "main": [
+        [
+          {
+            "node": "Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keywords": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WordPress: Create draft": {
+      "main": [
+        [
+          {
+            "node": "Summary Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM (DeepSeek)": {
+      "main": [
+        [
+          {
+            "node": "Extract Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "id": "seoDemo01"
+}

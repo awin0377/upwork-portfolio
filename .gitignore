@@ -1,0 +1,17 @@
+# Secrets first — never commit
+.env*
+key.txt
+
+# This folder also holds private working files. Only the repo content below is tracked.
+/*
+!/.gitignore
+!/README.md
+!/csv-cleanup/
+!/n8n-seo-flow/
+
+# OS noise
+.DS_Store
+
+# Private materials (explicit, even though already covered by the whitelist)
+n8n-demo-data/
+上传包-Upwork作品集/
